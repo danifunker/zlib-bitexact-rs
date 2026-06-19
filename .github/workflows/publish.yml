@@ -1,0 +1,58 @@
+name: Publish
+
+# Release to crates.io when a version tag is pushed (e.g. v0.131.0), or run manually
+# (defaulting to a dry run) to validate packaging without publishing.
+on:
+  push:
+    tags: ['v*.*.*']
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Dry run (build + package only, do not publish)
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  publish:
+    name: cargo publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      # Release gate: output must still be byte-identical to the vendored zlib 1.3.1 oracle.
+      - name: Differential tests vs zlib 1.3.1
+        run: cargo test --features cref
+
+      # On a tag, the tag (vX.Y.Z) must match the crate version in Cargo.toml.
+      - name: Check tag matches crate version
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          crate_ver="$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[0].version')"
+          tag_ver="${GITHUB_REF_NAME#v}"
+          echo "crate=$crate_ver tag=$tag_ver"
+          if [ "$crate_ver" != "$tag_ver" ]; then
+            echo "::error::tag $GITHUB_REF_NAME does not match crate version $crate_ver"
+            exit 1
+          fi
+
+      # Log exactly what ships — must be the slim tarball (no cref/, no build.rs).
+      - name: List packaged files
+        run: cargo package --list
+
+      - name: Publish (dry run)
+        if: github.event_name == 'workflow_dispatch' && inputs.dry_run
+        run: cargo publish --dry-run
+
+      - name: Publish to crates.io
+        if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && !inputs.dry_run)
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: cargo publish

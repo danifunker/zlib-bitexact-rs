@@ -70,11 +70,14 @@ cargo fmt && cargo clippy --all-targets --features cref -- -D warnings
 - [x] Removed the scaffold `#![allow(dead_code)]`; `cargo clippy --all-targets --features cref
       -- -D warnings`, `cargo fmt --check`, and doctests all clean.
 - [x] Public API: `pub fn deflate_raw(&[u8]) -> Vec<u8>`. README status table.
-- [~] CI in `.github/workflows/ci.yml` (runs on all branches + PRs): fmt/clippy, the cref
+- [x] CI in `.github/workflows/ci.yml` (runs on all branches + PRs): fmt/clippy, the cref
       differential suite on stable + MSRV 1.85, and a pure-Rust build/test matrix
-      (ubuntu/windows/macos). crates.io publish workflow still pending.
-- [~] Version `0.131.0` set in `Cargo.toml`; tag `v0.131.0` + confirm `cargo publish --dry-run`
-      ships the slim tarball (no `cref/`, no `build.rs`) still pending.
+      (ubuntu/windows/macos). crates.io publish workflow in `.github/workflows/publish.yml`
+      (`cargo publish` on a `v*` tag, gated on the differential suite + tag/version match; manual
+      dry-run via `workflow_dispatch`).
+- [~] Version `0.131.0` set in `Cargo.toml`; the publish workflow runs `cargo package --list` +
+      `cargo publish --dry-run` to confirm the slim tarball (no `cref/`, no `build.rs`). Cutting the
+      `v0.131.0` tag (which triggers the real publish) is still a manual release step.
 - [ ] In `chd-rs`: swap the zlib encoder to this crate and un-ignore
       `chdman_compat::zlib_bit_exact_vs_chdman` — it must pass against chdman 0.288 (incl. real
       captured CHD hunks).
