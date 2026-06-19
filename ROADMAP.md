@@ -70,7 +70,9 @@ cargo fmt && cargo clippy --all-targets --features cref -- -D warnings
 - [x] Removed the scaffold `#![allow(dead_code)]`; `cargo clippy --all-targets --features cref
       -- -D warnings`, `cargo fmt --check`, and doctests all clean.
 - [x] Public API: `pub fn deflate_raw(&[u8]) -> Vec<u8>`. README status table.
-- [ ] CI (pure-Rust matrix + a Linux cref differential job) + crates.io publish workflow.
+- [~] CI in `.github/workflows/ci.yml` (runs on all branches + PRs): fmt/clippy, the cref
+      differential suite on stable + MSRV 1.85, and a pure-Rust build/test matrix
+      (ubuntu/windows/macos). crates.io publish workflow still pending.
 - [~] Version `0.131.0` set in `Cargo.toml`; tag `v0.131.0` + confirm `cargo publish --dry-run`
       ships the slim tarball (no `cref/`, no `build.rs`) still pending.
 - [ ] In `chd-rs`: swap the zlib encoder to this crate and un-ignore

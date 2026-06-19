@@ -1,0 +1,65 @@
+name: CI
+
+# Run on every branch and every pull request.
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: ['**']
+
+# Cancel superseded runs on the same ref so all-branch CI doesn't pile up.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  lint:
+    name: fmt + clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - name: rustfmt
+        run: cargo fmt --all -- --check
+      - name: clippy (with cref oracle)
+        run: cargo clippy --all-targets --features cref -- -D warnings
+
+  cref:
+    name: differential vs zlib 1.3.1 (Rust ${{ matrix.rust }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        rust: [stable, 1.85.0] # 1.85.0 == MSRV (edition 2024)
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust }}
+      - uses: Swatinem/rust-cache@v2
+      # gcc is preinstalled on ubuntu runners; build.rs (cc) compiles the vendored zlib oracle.
+      - name: test (byte-for-byte vs C oracle)
+        run: cargo test --features cref
+
+  pure:
+    name: pure-rust ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      # Default features only: the published-crate path — no C toolchain, no cref/ or build.rs.
+      - name: build
+        run: cargo build --verbose
+      - name: test (doctests + unit)
+        run: cargo test --verbose
