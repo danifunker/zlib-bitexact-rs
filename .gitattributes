@@ -1,0 +1,9 @@
+# Normalize our own Rust/text sources to LF.
+*.rs text eol=lf
+*.toml text eol=lf
+*.md text eol=lf
+*.c text eol=lf
+
+# Keep the vendored zlib C oracle exactly as upstream (last match wins, so this
+# overrides *.c above). The differential rig compiles it; don't let git rewrite it.
+cref/vendor/** -text
