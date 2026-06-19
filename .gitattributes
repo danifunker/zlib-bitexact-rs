@@ -3,6 +3,8 @@
 *.toml text eol=lf
 *.md text eol=lf
 *.c text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
 
 # Keep the vendored zlib C oracle exactly as upstream (last match wins, so this
 # overrides *.c above). The differential rig compiles it; don't let git rewrite it.
