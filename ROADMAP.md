@@ -75,9 +75,10 @@ cargo fmt && cargo clippy --all-targets --features cref -- -D warnings
       (ubuntu/windows/macos). crates.io publish workflow in `.github/workflows/publish.yml`
       (`cargo publish` on a `v*` tag, gated on the differential suite + tag/version match; manual
       dry-run via `workflow_dispatch`).
-- [~] Version `0.131.0` set in `Cargo.toml`; the publish workflow runs `cargo package --list` +
-      `cargo publish --dry-run` to confirm the slim tarball (no `cref/`, no `build.rs`). Cutting the
-      `v0.131.0` tag (which triggers the real publish) is still a manual release step.
+- [~] Version `0.131.0` set in `Cargo.toml`; `cargo publish --dry-run` confirmed the slim tarball
+      (15 files, 74.9 KiB, no `cref/`, no `build.rs`) and that the packaged crate builds. Cutting
+      the `v0.131.0` tag + adding the `CARGO_REGISTRY_TOKEN` secret (the real publish) is the
+      remaining manual release step.
 - [ ] In `chd-rs`: swap the zlib encoder to this crate and un-ignore
       `chdman_compat::zlib_bit_exact_vs_chdman` — it must pass against chdman 0.288 (incl. real
       captured CHD hunks).
