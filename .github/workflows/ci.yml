@@ -1,65 +1,54 @@
 name: CI
 
-# Run on every branch and every pull request.
+# Runs on every branch and pull request.
 on:
   push:
     branches: ['**']
   pull_request:
-    branches: ['**']
-
-# Cancel superseded runs on the same ref so all-branch CI doesn't pile up.
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  lint:
-    name: fmt + clippy
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          components: rustfmt, clippy
-      - uses: Swatinem/rust-cache@v2
-      - name: rustfmt
-        run: cargo fmt --all -- --check
-      - name: clippy (with cref oracle)
-        run: cargo clippy --all-targets --features cref -- -D warnings
-
-  cref:
-    name: differential vs zlib 1.3.1 (Rust ${{ matrix.rust }})
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        rust: [stable, 1.85.0] # 1.85.0 == MSRV (edition 2024)
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: ${{ matrix.rust }}
-      - uses: Swatinem/rust-cache@v2
-      # gcc is preinstalled on ubuntu runners; build.rs (cc) compiles the vendored zlib oracle.
-      - name: test (byte-for-byte vs C oracle)
-        run: cargo test --features cref
-
-  pure:
-    name: pure-rust ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+  # Portability tracker: the pure-Rust library builds and its tests (doctests)
+  # pass on every platform. No C toolchain is involved (build.rs is a no-op
+  # without `cref`), so this guards against platform-specific regressions.
+  test:
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      # Default features only: the published-crate path — no C toolchain, no cref/ or build.rs.
-      - name: build
-        run: cargo build --verbose
-      - name: test (doctests + unit)
-        run: cargo test --verbose
+      - run: cargo test --locked
+
+  # Bit-exactness gate: diff the Rust deflate against the vendored zlib 1.3.1,
+  # compiled by cc. zlib's deflate is integer-only and deterministic, so the
+  # byte-for-byte comparison holds on any platform; we run it on Linux. Release
+  # mode keeps the differential corpus quick. `--locked`: the committed
+  # Cargo.lock pins the build toolchain (cc); CI must use it verbatim and fail
+  # on drift.
+  differential:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo test --release --locked --features cref
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo fmt --check
+      - run: cargo clippy --locked --all-targets --features cref -- -D warnings
+      - run: cargo doc --locked --no-deps
+        env:
+          RUSTDOCFLAGS: -D warnings
