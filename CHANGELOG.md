@@ -10,7 +10,7 @@ against that target.
 
 ## [Unreleased]
 
-## [0.131.0]
+## [0.131.0] - 2026-06-20
 
 First release. A pure-Rust, zero-runtime-dependency port of stock zlib 1.3.1's
 deflate whose raw DEFLATE output is **byte-identical to the C `deflate()`** for the

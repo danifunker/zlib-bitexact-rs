@@ -77,10 +77,10 @@ cargo fmt && cargo clippy --all-targets --features cref -- -D warnings
       `.github/workflows/publish-crates-io.yml` (`workflow_dispatch` with a tag input → preflight:
       tag↔version match, slim-tarball leak check, 512 KiB cap, artifact upload → `cargo publish`,
       dry-run or real). `CHANGELOG.md` tracks releases.
-- [~] Version `0.131.0` set in `Cargo.toml`; `cargo publish --dry-run` confirmed the slim tarball
-      (15 files, 74.9 KiB, no `cref/`, no `build.rs`) and that the packaged crate builds. Cutting
-      the `v0.131.0` tag + adding the `CARGO_REGISTRY_TOKEN` secret (the real publish) is the
-      remaining manual release step.
+- [x] Version `0.131.0` **published to crates.io** (2026-06-20) via the `publish-crates-io`
+      workflow: tag `v0.131.0` → preflight (tag↔version match, slim tarball: 15 files, 74.9 KiB,
+      no `cref/`/`build.rs`) → `cargo publish`. Live at
+      <https://crates.io/crates/zlib-bitexact-rs>.
 - [ ] In `chd-rs`: swap the zlib encoder to this crate and un-ignore
       `chdman_compat::zlib_bit_exact_vs_chdman` — it must pass against chdman 0.288 (incl. real
       captured CHD hunks).

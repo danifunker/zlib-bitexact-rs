@@ -1,5 +1,9 @@
 # zlib-bitexact-rs
 
+[![crates.io](https://img.shields.io/crates/v/zlib-bitexact-rs.svg)](https://crates.io/crates/zlib-bitexact-rs)
+[![docs.rs](https://img.shields.io/docsrs/zlib-bitexact-rs)](https://docs.rs/zlib-bitexact-rs)
+[![CI](https://github.com/danifunker/zlib-bitexact-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/danifunker/zlib-bitexact-rs/actions/workflows/ci.yml)
+
 A pure-Rust, **bit-exact** port of **stock zlib 1.3.1's deflate**. Its raw DEFLATE output is
 **byte-identical** to the C `deflate()` for the configuration used by MAME's CHD codec:
 `deflateInit2(Z_BEST_COMPRESSION, Z_DEFLATED, -15, 8, Z_DEFAULT_STRATEGY)` + one
@@ -15,8 +19,9 @@ Encode only — decode is unambiguous, so any zlib-compatible inflater reads thi
 
 ## Status
 
-✅ **Encoder complete and byte-exact.** `deflate_raw` reproduces zlib 1.3.1 byte-for-byte across
-the differential corpus (`cargo test --features cref`):
+✅ **Published on [crates.io](https://crates.io/crates/zlib-bitexact-rs) (v0.131.0) — byte-exact.**
+`deflate_raw` reproduces zlib 1.3.1 byte-for-byte across the differential corpus
+(`cargo test --features cref`):
 
 | Class | Cases |
 |---|---|
