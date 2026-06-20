@@ -83,7 +83,9 @@ cargo fmt && cargo clippy --all-targets --features cref -- -D warnings
       <https://crates.io/crates/zlib-bitexact-rs>.
 - [ ] In `chd-rs`: swap the zlib encoder to this crate and un-ignore
       `chdman_compat::zlib_bit_exact_vs_chdman` — it must pass against chdman 0.288 (incl. real
-      captured CHD hunks).
+      captured CHD hunks). **Return handoff written:** `chd-rs/docs/codec-ports/
+      zlib-bitexact-integration.md` (add the dep under `write`, swap `compression/zlib.rs` to
+      `deflate_raw`, un-ignore the test). chdman 0.288 bundles zlib **1.3.1** — confirmed aligned.
 
 ## Session log
 
