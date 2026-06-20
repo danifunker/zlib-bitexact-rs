@@ -70,11 +70,13 @@ cargo fmt && cargo clippy --all-targets --features cref -- -D warnings
 - [x] Removed the scaffold `#![allow(dead_code)]`; `cargo clippy --all-targets --features cref
       -- -D warnings`, `cargo fmt --check`, and doctests all clean.
 - [x] Public API: `pub fn deflate_raw(&[u8]) -> Vec<u8>`. README status table.
-- [x] CI in `.github/workflows/ci.yml` (runs on all branches + PRs): fmt/clippy, the cref
-      differential suite on stable + MSRV 1.85, and a pure-Rust build/test matrix
-      (ubuntu/windows/macos). crates.io publish workflow in `.github/workflows/publish.yml`
-      (`cargo publish` on a `v*` tag, gated on the differential suite + tag/version match; manual
-      dry-run via `workflow_dispatch`).
+- [x] CI in `.github/workflows/ci.yml` (all branches + PRs), aligned with the sibling crates
+      (`lzma-sdk-rs`/`libflac-rs`): a pure-Rust `test` matrix (ubuntu/windows/macos), a Linux
+      `differential` cref gate (`--release --locked --features cref`), and a `lint` job
+      (`fmt --check`, `clippy --locked -D warnings`, `cargo doc -D warnings`). Release via
+      `.github/workflows/publish-crates-io.yml` (`workflow_dispatch` with a tag input → preflight:
+      tag↔version match, slim-tarball leak check, 512 KiB cap, artifact upload → `cargo publish`,
+      dry-run or real). `CHANGELOG.md` tracks releases.
 - [~] Version `0.131.0` set in `Cargo.toml`; `cargo publish --dry-run` confirmed the slim tarball
       (15 files, 74.9 KiB, no `cref/`, no `build.rs`) and that the packaged crate builds. Cutting
       the `v0.131.0` tag + adding the `CARGO_REGISTRY_TOKEN` secret (the real publish) is the
