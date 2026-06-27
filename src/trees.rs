@@ -7,7 +7,7 @@
 //!
 //! The static trees and the length/distance code maps are produced at first use by a faithful port
 //! of `tr_static_init` (rather than transcribing `trees.h`), so they cannot drift from the C
-//! tables. C reference: `cref/vendor/zlib/trees.c`. These cost decisions are bit-exactness-critical
+//! tables. C reference: stock zlib 1.3.1 `trees.c`. These cost decisions are bit-exactness-critical
 //! — choosing static where zlib chose dynamic (or vice versa) diverges the whole stream. Output
 //! goes through `bitwriter.rs` (LSB-first).
 

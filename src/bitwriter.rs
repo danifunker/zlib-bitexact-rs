@@ -18,8 +18,8 @@
 //! ```
 //!
 //! `put_short` writes the low byte then the high byte (little-endian). C reference:
-//! `cref/vendor/zlib/trees.c` (`send_bits`, `bi_windup`) and
-//! `cref/vendor/zlib/deflate.h` (`put_byte`, `put_short`).
+//! stock zlib 1.3.1 `trees.c` (`send_bits`, `bi_windup`) and
+//! `deflate.h` (`put_byte`, `put_short`).
 
 /// Size of bit buffer in `bi_buf` (`Buf_size` in zlib).
 const BUF_SIZE: i32 = 16;

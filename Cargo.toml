@@ -16,30 +16,12 @@ documentation = "https://docs.rs/zlib-bitexact-rs"
 keywords = ["zlib", "deflate", "compression", "chd", "encoder"]
 categories = ["compression"]
 readme = "README.md"
-# The published crate is a pure-Rust, dependency-free library plus its proof
-# (src, tests, README/ROADMAP/LICENSE). Drop the AI dev guide, the CI config, and
-# the entire `cref/` differential rig — the vendored zlib C oracle, the FFI shim,
-# and build.rs — none of which a consumer needs.
-exclude = ["/.github", "/CLAUDE.md", "/cref", "/build.rs"]
-
-[features]
-default = []
-# Dev/test only: compile the vendored stock zlib 1.3.1 C via build.rs and expose
-# it over FFI so tests can diff the Rust deflate output against C `deflate()`
-# byte-for-byte. Requires a C compiler. Not usable from the published crate
-# (build.rs + cref/ are excluded); run it from a repo checkout:
-# `cargo test --features cref`.
-cref = []
+# Zero-dependency pure Rust: the whole crate is `src/` + the golden-vector tests +
+# README/ROADMAP/LICENSE. Drop the AI dev guide and the CI config — not needed by
+# consumers. (There is no build script and no C: the encoder is verified against
+# committed golden vectors; see docs/verifying-against-zlib.md to re-check vs the
+# C oracle.)
+exclude = ["/.github", "/CLAUDE.md"]
 
 [lib]
 name = "zlib_bitexact_rs"
-
-[build-dependencies]
-# Only used by build.rs under the `cref` feature (a repo checkout); the published
-# crate excludes build.rs, so consumers pull in nothing.
-cc = "1.2"
-
-[profile.dev]
-# The differential tests push the full corpus through both the Rust and C
-# deflate; opt-level 1 keeps debug test runs brisk.
-opt-level = 1

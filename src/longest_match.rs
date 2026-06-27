@@ -5,9 +5,9 @@
 //! Plus `INSERT_STRING` / `UPDATE_HASH` (with `hash_shift = (hash_bits + MIN_MATCH - 1) / MIN_MATCH`;
 //! `hash_bits = 15` at memLevel 8).
 //!
-//! This is the non-asm, non-`UNALIGNED_OK` `#else` path (the only one the cref build compiles),
+//! This is the non-asm, non-`UNALIGNED_OK` `#else` path (the portable scalar path),
 //! rewritten with window indices instead of pointers. The exact sequence of matches it returns
-//! determines every output byte. C reference: `cref/vendor/zlib/deflate.c` `longest_match`.
+//! determines every output byte. C reference: stock zlib 1.3.1 `deflate.c` `longest_match`.
 
 use crate::deflate::DeflateState;
 use crate::trees::{MAX_MATCH, MIN_MATCH};

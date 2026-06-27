@@ -14,7 +14,7 @@
 //! appended straight to a `Vec<u8>` and a block flush never has to bail out early. The matching and
 //! window bookkeeping are ported faithfully so the produced bytes are identical.
 //!
-//! C reference: `cref/vendor/zlib/deflate.c` — `deflate_slow`, `fill_window`, `lm_init`,
+//! C reference: stock zlib 1.3.1 `deflate.c` — `deflate_slow`, `fill_window`, `lm_init`,
 //! `configuration_table`, the `deflate()` `Z_FINISH` path. See CLAUDE.md for the hazards.
 
 use crate::bitwriter::BitWriter;
