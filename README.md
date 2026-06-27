@@ -19,7 +19,7 @@ Encode only — decode is unambiguous, so any zlib-compatible inflater reads thi
 
 ## Status
 
-✅ **Published on [crates.io](https://crates.io/crates/zlib-bitexact-rs) (v0.131.0) — byte-exact.**
+✅ **Published on [crates.io](https://crates.io/crates/zlib-bitexact-rs) (v0.131.1) — byte-exact.**
 `deflate_raw` reproduces zlib 1.3.1 byte-for-byte. A pure-Rust golden-vector test (`cargo test`,
 no C, no deps) guards every code path:
 

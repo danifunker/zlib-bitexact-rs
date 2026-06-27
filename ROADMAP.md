@@ -102,4 +102,5 @@ vectors. The full rig is recoverable from git history — see
 - 2026-06-27: Removed the vendored zlib 1.3.1 C oracle, `build.rs`, and the `cref` feature — the
   crate is now pure Rust with zero dependencies and no build script. Byte-exactness is frozen into
   committed golden vectors (`tests/golden.rs` + `tests/vectors/`, captured from the oracle); CI runs
-  them on all platforms. Full live re-verification: `docs/verifying-against-zlib.md`.
+  them on all platforms. Full live re-verification: `docs/verifying-against-zlib.md`. Released as
+  `0.131.1`.

@@ -10,14 +10,16 @@ against that target.
 
 ## [Unreleased]
 
+## [0.131.1] - 2026-06-27
+
 ### Changed
 
 - Removed the vendored stock zlib 1.3.1 C oracle, `build.rs`, and the `cref` feature from the repo.
   The crate is now pure Rust with **zero dependencies and no build script** (`cargo tree` is empty).
   Byte-exactness is guarded by committed golden vectors (`tests/golden.rs`, captured from zlib
   1.3.1); full re-verification against a live C oracle is documented in
-  `docs/verifying-against-zlib.md`. The published library output is unchanged — `deflate_raw` still
-  produces identical bytes.
+  `docs/verifying-against-zlib.md`. The library output is unchanged from 0.131.0 — `deflate_raw`
+  still produces identical bytes.
 
 ## [0.131.0] - 2026-06-20
 
@@ -51,5 +53,6 @@ differential testing against the vendored C on every path.
   Fibonacci distributions (exercising the bit-length-overflow path), multi-block and
   window-sliding inputs, and CHD hunk sizes (4096 / 2448-multiples / 19584).
 
-[Unreleased]: https://github.com/danifunker/zlib-bitexact-rs/compare/v0.131.0...HEAD
+[Unreleased]: https://github.com/danifunker/zlib-bitexact-rs/compare/v0.131.1...HEAD
+[0.131.1]: https://github.com/danifunker/zlib-bitexact-rs/compare/v0.131.0...v0.131.1
 [0.131.0]: https://github.com/danifunker/zlib-bitexact-rs/releases/tag/v0.131.0
