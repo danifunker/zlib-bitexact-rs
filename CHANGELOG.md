@@ -10,6 +10,15 @@ against that target.
 
 ## [Unreleased]
 
+### Changed
+
+- Removed the vendored stock zlib 1.3.1 C oracle, `build.rs`, and the `cref` feature from the repo.
+  The crate is now pure Rust with **zero dependencies and no build script** (`cargo tree` is empty).
+  Byte-exactness is guarded by committed golden vectors (`tests/golden.rs`, captured from zlib
+  1.3.1); full re-verification against a live C oracle is documented in
+  `docs/verifying-against-zlib.md`. The published library output is unchanged — `deflate_raw` still
+  produces identical bytes.
+
 ## [0.131.0] - 2026-06-20
 
 First release. A pure-Rust, zero-runtime-dependency port of stock zlib 1.3.1's

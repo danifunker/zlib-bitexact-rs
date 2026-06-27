@@ -38,14 +38,17 @@ src/
   trees.rs          // build_tree, _tr_flush_block (stored/static/dynamic), compress_block
   bitwriter.rs      // LSB-first bit accumulator (send_bits/bi_buf/bi_windup)
   lib.rs            // pub fn deflate_raw(&[u8]) -> Vec<u8>
-cref/
-  shim.c            // FFI: zlib_bitexact_rs_cref_deflate_raw (the C oracle entry point)
-  vendor/zlib/      // stock zlib 1.3.1 C source (the oracle; deflate.c/trees.c/zutil.c/...)
 tests/
-  differential.rs   // diff Rust vs C oracle, byte-for-byte
+  golden.rs         // assert deflate_raw == tests/vectors/*.bin (pure Rust, no C)
+  common/mod.rs     // shared deterministic golden corpus
+  vectors/*.bin     // raw-DEFLATE outputs frozen from the zlib 1.3.1 oracle
+docs/
+  verifying-against-zlib.md  // how to rebuild a C oracle and re-verify byte-for-byte
 ```
 
-C reference for every Rust module is the matching file under `cref/vendor/zlib/`.
+C reference for every Rust module is the matching file in stock zlib 1.3.1 (`deflate.c`, `trees.c`,
+`zutil.h`); the crate carries no C. See `docs/verifying-against-zlib.md` to diff against a live
+oracle.
 
 ## Bit-exactness hazards (where ports go wrong)
 
@@ -64,17 +67,18 @@ C reference for every Rust module is the matching file under `cref/vendor/zlib/`
 
 ## The verification workflow (the whole game)
 
-Nothing is "done" until it is **byte-identical to the C oracle** across the corpus. The rig:
+Nothing is "done" until it is **byte-identical to stock zlib 1.3.1** across the corpus. The crate
+carries no C; verification is in two layers:
 
-- `build.rs` compiles `cref/vendor/zlib` + `cref/shim.c` under the `cref` feature into a static
-  lib; `tests/differential.rs` calls `zlib_bitexact_rs_cref_deflate_raw` over FFI and asserts
-  `deflate_raw(x) == c_oracle(x)` byte-for-byte.
-- Run: `cargo test --features cref`. Corpus must include: all-zeros, runs, repeated text,
-  random/incompressible, and real CHD hunks at CHD hunk sizes (4096; 2448-multiples for CD
-  subcode; 19584). Add a per-stage corpus as you build (stored → static → dynamic → full).
-- A test asserting `zlib_bitexact_rs_cref_version()` == `"1.3.1"` guards the oracle version.
-- Lint: `cargo fmt && cargo clippy --all-targets --features cref -- -D warnings`.
-- `#![forbid(unsafe_code)]`; remove the scaffold `#![allow(dead_code)]` at D4.
+- **In-repo guard (always on, pure Rust):** `tests/golden.rs` asserts `deflate_raw(x)` equals the
+  committed `tests/vectors/<name>.bin`, captured from the zlib 1.3.1 C oracle. Run: `cargo test`.
+  The curated corpus covers stored/static/dynamic blocks, multi-block (>16383 symbols), window
+  sliding (>64 KiB), the bit-length-overflow path, and CHD hunk sizes (4096; 2448-multiples; 19584).
+- **Full re-verification (when changing the encoder or retargeting zlib):** rebuild a real C oracle
+  and diff arbitrary inputs byte-for-byte — see `docs/verifying-against-zlib.md` (standalone
+  `oracle.c`, or restore the original FFI `cref` rig from git history). **Never** regenerate a
+  golden vector from `deflate_raw` itself — only from the oracle, or the test becomes circular.
+- Lint: `cargo fmt && cargo clippy --all-targets -- -D warnings`. `#![forbid(unsafe_code)]`.
 
 ## Final integration (in `chd-rs`, not here)
 
@@ -85,8 +89,8 @@ chdman 0.288. The CD codecs (`cdzl`, and the `cdlz`/`cdfl` subcode streams) use 
 
 ## Conventions
 
-- Edition 2024, MSRV 1.85, **zero runtime dependencies** (cc is a build-dep, cref-only).
+- Edition 2024, MSRV 1.85, **zero dependencies, no build script** (`cargo tree` is empty).
 - Version `0.131.x` (131 = zlib 1.3.1); keep in sync with the git tag.
-- `cref/` + `build.rs` are excluded from the published crate (see `Cargo.toml` `exclude`).
-- Commit per ROADMAP phase. The vendored `cref/vendor/zlib` tree is third-party — stage paths
-  explicitly, don't `git add -A` if line-ending noise appears.
+- The published crate excludes only the AI dev guide and CI config (`Cargo.toml` `exclude`); the
+  golden-vector tests ship. `tests/vectors/*.bin` are binary fixtures (see `.gitattributes`).
+- Commit per ROADMAP phase (for this repo, directly on `main`).

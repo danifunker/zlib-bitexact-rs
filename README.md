@@ -20,8 +20,8 @@ Encode only — decode is unambiguous, so any zlib-compatible inflater reads thi
 ## Status
 
 ✅ **Published on [crates.io](https://crates.io/crates/zlib-bitexact-rs) (v0.131.0) — byte-exact.**
-`deflate_raw` reproduces zlib 1.3.1 byte-for-byte across the differential corpus
-(`cargo test --features cref`):
+`deflate_raw` reproduces zlib 1.3.1 byte-for-byte. A pure-Rust golden-vector test (`cargo test`,
+no C, no deps) guards every code path:
 
 | Class | Cases |
 |---|---|
@@ -34,9 +34,10 @@ Encode only — decode is unambiguous, so any zlib-compatible inflater reads thi
 | Adversarial | skewed/geometric/Fibonacci frequencies (bit-length-overflow path) |
 | CHD hunk sizes | 4096; 2448-multiples (CD subcode); 19584 |
 
-Every encoded byte is differential-tested against the vendored zlib 1.3.1 C source (the `cref`
-feature). See [`ROADMAP.md`](ROADMAP.md) for the build plan and [`CLAUDE.md`](CLAUDE.md) for the
-architecture and bit-exactness hazards.
+The golden vectors in `tests/vectors/` were captured from stock zlib 1.3.1; to re-verify against a
+live C oracle (or regenerate them), follow
+[`docs/verifying-against-zlib.md`](docs/verifying-against-zlib.md). See [`ROADMAP.md`](ROADMAP.md)
+for the build plan and [`CLAUDE.md`](CLAUDE.md) for the architecture and bit-exactness hazards.
 
 ## Usage
 
@@ -56,5 +57,5 @@ exactly (the version MAME 0.288 bundles).
 
 ## License
 
-BSD-3-Clause. Ports stock zlib 1.3.1 (`cref/vendor/zlib`), which is under the permissive zlib
-license (© Jean-loup Gailly & Mark Adler) — retained in the source headers.
+BSD-3-Clause. A port of stock zlib 1.3.1, which is under the permissive zlib license
+(© Jean-loup Gailly & Mark Adler) — see [`LICENSE`](LICENSE).

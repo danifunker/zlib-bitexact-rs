@@ -13,24 +13,26 @@ one `deflate(Z_FINISH)`. Encode-only, raw DEFLATE, that one configuration.
 
 ## The verification rule (governs all work)
 
-Nothing is "done" until `deflate_raw(x)` equals the C oracle byte-for-byte across the corpus —
-not merely "valid DEFLATE". Build/test with the oracle:
+Nothing is "done" until `deflate_raw(x)` equals stock zlib 1.3.1 byte-for-byte — not merely "valid
+DEFLATE". The in-repo guard is a pure-Rust golden-vector test (no C, no deps):
 
 ```sh
-cargo test --features cref
-cargo fmt && cargo clippy --all-targets --features cref -- -D warnings
+cargo test
+cargo fmt && cargo clippy --all-targets -- -D warnings
 ```
 
-`build.rs` + `cref/shim.c` compile the vendored zlib 1.3.1 and diff Rust output **byte-for-byte**
-(`tests/differential.rs`). Add a corpus per phase; diff at the first mismatching byte.
+`tests/golden.rs` checks `deflate_raw` against the committed `tests/vectors/*.bin`, captured from
+the zlib 1.3.1 C oracle. To re-verify against a live C oracle, diff arbitrary inputs, or regenerate
+the vectors, follow [`docs/verifying-against-zlib.md`](docs/verifying-against-zlib.md).
 
-## Verification rig (the enabler)
+## Verification rig (the enabler) — used during the port, since removed
 
-- [x] `cref` feature builds the vendored zlib + shim via `cc` (MSVC/clang/gcc); a C-only
-      sanity test deflates + inflates a buffer to prove the rig links.
-- [x] `zlib_bitexact_rs_cref_version()` asserts the oracle is `"1.3.1"`.
-- [x] `differential.rs` harness: `assert_eq!(deflate_raw(x), c_oracle(x))` over a broad corpus
-      (ignore removed; first-mismatch offset reported on divergence).
+The D0–D3 port was built against an in-repo C oracle: `build.rs` compiled the vendored zlib 1.3.1
++ `cref/shim.c` via `cc` under a `cref` feature, and `tests/differential.rs` asserted
+`deflate_raw(x) == c_oracle(x)` over a broad corpus. **That rig has since been removed** to keep the
+tree pure Rust (zero deps, no build script); its byte-for-byte verdict is frozen into the golden
+vectors. The full rig is recoverable from git history — see
+[`docs/verifying-against-zlib.md`](docs/verifying-against-zlib.md).
 
 ## D0 — Bit writer + stored blocks
 
@@ -70,10 +72,10 @@ cargo fmt && cargo clippy --all-targets --features cref -- -D warnings
 - [x] Removed the scaffold `#![allow(dead_code)]`; `cargo clippy --all-targets --features cref
       -- -D warnings`, `cargo fmt --check`, and doctests all clean.
 - [x] Public API: `pub fn deflate_raw(&[u8]) -> Vec<u8>`. README status table.
-- [x] CI in `.github/workflows/ci.yml` (all branches + PRs), aligned with the sibling crates
-      (`lzma-sdk-rs`/`libflac-rs`): a pure-Rust `test` matrix (ubuntu/windows/macos), a Linux
-      `differential` cref gate (`--release --locked --features cref`), and a `lint` job
-      (`fmt --check`, `clippy --locked -D warnings`, `cargo doc -D warnings`). Release via
+- [x] CI in `.github/workflows/ci.yml` (all branches + PRs): a pure-Rust `test` matrix
+      (ubuntu/windows/macos) that runs the golden-vector byte-exactness test on every platform, and
+      a `lint` job (`fmt --check`, `clippy --locked -D warnings`, `cargo doc -D warnings`). Release
+      via
       `.github/workflows/publish-crates-io.yml` (`workflow_dispatch` with a tag input → preflight:
       tag↔version match, slim-tarball leak check, 512 KiB cap, artifact upload → `cargo publish`,
       dry-run or real). `CHANGELOG.md` tracks releases.
@@ -97,3 +99,7 @@ cargo fmt && cargo clippy --all-targets --features cref -- -D warnings
   bit-length-overflow path verified hit). clippy `-D warnings` / `fmt` / doctests clean and the
   scaffold `#![allow(dead_code)]` removed. D4 remainder: CI, `v0.131.0` tag + publish dry-run, and
   the `chd-rs` integration.
+- 2026-06-27: Removed the vendored zlib 1.3.1 C oracle, `build.rs`, and the `cref` feature — the
+  crate is now pure Rust with zero dependencies and no build script. Byte-exactness is frozen into
+  committed golden vectors (`tests/golden.rs` + `tests/vectors/`, captured from the oracle); CI runs
+  them on all platforms. Full live re-verification: `docs/verifying-against-zlib.md`.
